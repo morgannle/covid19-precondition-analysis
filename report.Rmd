@@ -1,0 +1,213 @@
+---
+title: "covid-19-analysis"
+author: "Quang Le"
+date: "7/31/2020"
+output: html_document
+---
+
+
+***Abstract***
+
+SARS-CoV-2, a novel corona virus which causes COVID-19, the respiratory illness responsible for the COVID-19 pandemic. The World Health Organization declared the outbreak a Public Health Emergency of International Concern on 30 January 2020, and a pandemic on 11 March 2020. Until today (August 1st, 2020), the virus has infected over 18 millions, and claimed the life of nearly 700,000 people. The pandemic not only caused the biggest health crisis of the 21st century so far, but it also triggered a global economic recession. Til this day we still know very little about this virus but how it transmits, we already know that old people and people with pre-existing condition(s) are the most vulnerable demographic, but there are little studies conducted to quantify risks associate with a specific age or condition. This project tries to quantify and estimate risks associate with a certain conditions and age groups.
+
+I want to give my sincrere gratitude toward Tanmoy Mukherjee (https://www.kaggle.com/tanmoyx) for giving us the crucial information about the data set. My work will not be possible without him.
+
+***I. Introduction of the data set***
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(dplyr)
+wd ="C:/Users/nghia/OneDrive/Documents/GitHub/covid19-precondition-analysis"
+setwd(wd)
+```
+
+Data is being collected by the Mexican goverment, it contains a large number of anonymised patient-related information such as pre-existing conditions, gender, age, symptom date and entry date. The data contains patient information around the world. Before doing any analysis, we should take a look at the data schema, format and missing values.
+
+```{r, rwarning=FALSE, message=FALSE}
+data = as.data.frame(
+  read.csv("covid.csv")
+)
+nrow(data)
+head(data)
+```
+
+The data set contains 993,197 records, the data dictionary is provided as below:
+
+1. ***id***: The identification number of the patient.
+
+2. ***sex***: Identify gender of the patient, 1 as female and 2 as male.
+
+3. ***patient_type***: Type of patient, 1 for not hospitalized and 2 for hosptalized.
+
+4. ***entry_date***: The date that the patient went to the hospital.
+
+5. ***date_symptom***s: The date that the patient started to show symptoms.
+
+6. ***date_died***: The date that the patient died, "9999-99-99" stands for recovered.
+
+7. ***intubed***: Intubation is a procedure that's used when you can't breathe on your own. Your doctor puts a tube down your throat and into your windpipe to make it easier to get air into and out of your lungs. A machine called a ventilator pumps in air with extra oxygen. Then it helps you breathe out air that’s full of carbon dioxide (CO2). "1" denotes that the patient used ventilator and "2" denotes that the patient did not, "97" "98" "99" means not specified.
+
+8. ***pneumonia***: Indicates whether the patient already have air sacs inflammation or not "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+9. ***age***: Specifies the age of the patient.
+
+10. ***pregnancy***: Indicates whether the patient is pregnant or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+11. ***diabetes***: Indicates whether the patient has diabetes or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+12. ***copd***: Indicates whether the patient has Chronic obstructive pulmonary disease (COPD) or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+13. ***asthma***: Indiactes whether the patient has asthma or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+14. ***inmsupr***: Indicates whether the patient is immunosuppressed or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+15. ***hypertension***: Indicates whether the patient has hypertension or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+16. ***other_disease***: Indicates whether the patient has other disease or not, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+17. ***cardiovascular***: Indicates whether if the patient has heart or blood vessels realted disease, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+18. ***obesity***: Indicates whether the patient is obese or not,  "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+19. ***renal_chronic***: Indicates whether the patient has chronic renal disease or not,  "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+20. ***tobacco***: Indicates whether if the patient is a tobacco user, "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+21. ***contact_other_covid***: Indicates whether if the patient has contacted another covid19 patient.
+
+22. ***icu***: Indicates whether the if the patient had been admitted to an Intensive Care Unit (ICU), "1" for yes, "2" for no, "97" "98" "99" means not specified.
+
+***II. Data processing***
+
+In this project, I decided to discard ***pregnancy***, ***contact_other_covid***, ***covid_res***, ***icu*** and ***intubed***. These variables has significant portion of missing value and we don't know that these are missing completely at random (MCAR) or missing not at random (MNAR), it is the best that we should discard these variable to avoid parameters bias. Data processing is provided below.
+
+First we split the data set into 2 parts, ***data*** will contain categorical variables and ***subset*** will contain continuous and date variables.
+
+```{r}
+data$id = NULL
+subset = data[ ,c(3,4,5,8)]
+data = data[ , -c(3,4,5,8)]
+
+```
+
+Then we will convert all variables in ***data*** to numeric
+
+```{r, warning=FALSE}
+data = apply(data, 2, as.numeric)
+```
+
+We define ***ident***, this function will convert categorical variables to binary ***0*** and ***1***.
+
+```{r}
+#this function assign 1 as yes and 0 as no
+ident <- function(x){
+  temp = case_when(
+    x == 1 ~ 1, 
+    x == 2 ~ 0,
+    TRUE ~ 100 #100 is the flag for NULL
+  )
+  return(temp)
+}
+#convert categorical variables to binary 0 and 1
+data = as.data.frame(
+  apply(data, 2, ident)
+  )
+```
+
+With the ***subset***, we use value from ***date_died*** to create a new variable ***death***, this variable takes value of ***1*** if the patient died and ***0*** otherwise. 
+
+```{r}
+#death flag
+subset = subset %>% mutate(
+  subset,
+  death = ifelse(date_died == "9999-99-99", 0, 1))
+```
+
+Next, we use values from ***date_symptoms*** and ***entry_date*** to create a new variable ***duration***. We define ***duration*** as time (day) between the day the symptoms start showing and the day the patient goes to the hospital to check up.
+
+```{r}
+#time from symptoms to entry
+subset$date_symptoms = as.Date(subset$date_symptoms, 
+                                format = "%Y-%m-%d")
+subset$entry_date = as.Date(subset$entry_date, 
+                          format = "%Y-%m-%d")
+subset$duration = as.numeric(subset$entry_date - subset$date_symptoms) 
+```
+
+After pre-processing, we combine two data set.
+
+```{r}
+data$id = c(1:nrow(data)) #create id
+data = cbind(data, subset) #combine data sets
+```
+
+Now we discard variables that we are not going to use.
+
+```{r}
+#deleting unsed variables
+data$date_died = NULL
+data$date_symptoms = NULL
+data$entry_date = NULL
+data$pregnancy = NULL
+data$contact_other_covid = NULL
+data$covid_res = NULL
+data$icu = NULL
+data$intubed = NULL
+```
+
+Then we drop all NULL record.
+
+```{r}
+#deleting NULL record
+temp = data %>% filter_all(any_vars(. %in% 100)) #select every record with NULL
+drop_id = temp$id #get id of NULL records
+data = data[-drop_id, ] #delete records with NULL
+data$id = NULL #discard id
+```
+
+The last step of data processing is that we convert type of every categorical variables to factor.
+
+```{r}
+for(i in 1:16){
+  if(i == 14 | i == 16) next
+  data[ ,i] = factor(data[ ,i],
+                     levels = c("0", "1"))
+}
+```
+
+This is the final data that we can use for model building. 
+
+```{r}
+head(data)
+```
+
+***II. Fitting the logistic regression model and interpretation***
+
+In this project we used logistic regression to model  the relationship between independent variables and response variable.
+
+```{r warning=FALSE}
+
+model = glm(data = data,
+                   formula = death~.,
+                   family = binomial(link = "logit"))
+summary(model)
+```
+
+95% Confident interval:
+
+```{r  warning=FALSE, message=FALSE}
+exp(confint(model, level = 0.95))
+```
+
+All the parameters are significant at 5% level, now we can interpretate the parameters' coefficients.
+
+***sex***: This variable is encoded as ***1*** for ***female*** and ***0*** for ***male***. With the 95% confidence interval, we can conclude that when we compare two people with the same pre-existing conditions or age, the odds of dying due to COVID-19 for female is 31.04% - 33.86% less than that of male. Male population is more susceptible to dying due to COVID-19 than the female population. 
+
+***patient_type***: We encoded ***1*** for ***patients who were admitted to the hospital*** and ***0*** for ***patients who were not***. With the 95% confidence interval, we conclude that for people that were admitted to the hospital, their odds of dying is 92.48% - 92.94% less than that of people who were not admitted, provided that the conditions of the two groups are the same. This again confirms that when patients are provided with adequate care, their chances of surviving rise significantly.
+
+***pneumonia***: For this variable, ***1*** indicates ***patient with pre-existing pneumonia*** and ***0*** indicates ***who without it***. From the 95% confidence interval table, for people with pre-existing pneumonia, their odds of dying is staggeringly 199.57% - 213.87% more than that of people without pre-existing pneumonia, provided that they have same age and same pre-existing conditions. So far people with pre-existing pneumonia is the most susceptible group to dying due to COVID 19.
+
+Using the same way of variable encoding and parameters interpretation, we found out that for ***diabetes***, the increase in odds of dying is 24,64% - 30.44%, for ***inmsupr***, the increase is 15.00% - 29.32%, for ***hypertension***, the increase is 14.40% - 19.79%, ***other_disease***: 36.28% - 49.01%, ***obesity***: 20.43% - 26.43%, ***renal_chronic***: 42.89% - 55.64%.
+
+Surprisingly, people with ***asthma*** has  5.63% - 17.62% less odds of dying than with people without asthma. For people with ***copd***, the decrease is 3.16% - 12.14%. ***Tobacco users*** also have 11.13% - 17.34% less odds of dying than non-users. All the above comparisons are based on the assumption that other conditions, age, patient_type are the same, for example, if we have 2 50-year old males, admitted to the hospital due to COVID-19 who are obese, the one that smokes will have 11.13% - 17.34% less odds of dying than the one that doesn't smoke (this is not to encourage you to smoke more during the pandemic, ***correlation*** is very different than ***causation***. It is likely that there are confounding variables that we do not know about).
+
+For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase of ***duration*** is appriximately 1%.
