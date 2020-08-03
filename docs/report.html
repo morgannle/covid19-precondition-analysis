@@ -1312,32 +1312,32 @@ summary(model)</code></pre>
 ## AIC: 265088
 ## 
 ## Number of Fisher Scoring iterations: 7</code></pre>
-<p>95% Confident interval:</p>
-<pre class="r"><code>exp(confint(model, level = 0.95))</code></pre>
+<p>95% Confidence interval for odds difference between levels (in percentage):</p>
+<pre class="r"><code>(exp(confint(model, level = 0.95)) - 1)*100</code></pre>
 <pre><code>##                      2.5 %     97.5 %
-## (Intercept)     0.01794525 0.01967122
-## sex1            0.66141688 0.68958964
-## patient_type1   0.07052775 0.07510929
-## pneumonia1      2.99576234 3.13871105
-## diabetes1       1.24643291 1.30444214
-## copd1           0.87862766 0.96842077
-## asthma1         0.82377475 0.94372138
-## inmsupr1        1.15001485 1.29323389
-## hypertension1   1.14400930 1.19792407
-## other_disease1  1.36283775 1.49013817
-## cardiovascular1 0.81614177 0.89484615
-## obesity1        1.20431819 1.26435525
-## renal_chronic1  1.42897672 1.55639014
-## tobacco1        0.82656441 0.88863953
-## age             1.04013367 1.04154500
-## duration        0.98965648 0.99528880</code></pre>
+## (Intercept)     -98.205475 -98.032878
+## sex1            -33.858312 -31.041036
+## patient_type1   -92.947225 -92.489071
+## pneumonia1      199.576234 213.871105
+## diabetes1        24.643291  30.444214
+## copd1           -12.137234  -3.157923
+## asthma1         -17.622525  -5.627862
+## inmsupr1         15.001485  29.323389
+## hypertension1    14.400930  19.792407
+## other_disease1   36.283775  49.013817
+## cardiovascular1 -18.385823 -10.515385
+## obesity1         20.431819  26.435525
+## renal_chronic1   42.897672  55.639014
+## tobacco1        -17.343559 -11.136047
+## age               4.013367   4.154500
+## duration         -1.034352  -0.471120</code></pre>
 <p>All the parameters are significant at 5% level, now we can interpretate the parameters’ coefficients.</p>
 <p><strong><em>sex</em></strong>: This variable is encoded as <strong><em>1</em></strong> for <strong><em>female</em></strong> and <strong><em>0</em></strong> for <strong><em>male</em></strong>. With the 95% confidence interval, we can conclude that when we compare two people with the same pre-existing conditions and age, the odds of dying due to COVID-19 for female is 31.04% - 33.86% less than that of male. Male population is more susceptible to dying due to COVID-19 than the female population.</p>
 <p><strong><em>patient_type</em></strong>: We encoded <strong><em>1</em></strong> for <strong><em>patients who were admitted to the hospital</em></strong> and <strong><em>0</em></strong> for <strong><em>patients who were not</em></strong>. With the 95% confidence interval, we conclude that for people that were admitted to the hospital, their odds of dying is 92.48% - 92.94% less than that of people who were not admitted, provided that the conditions of the two groups are the same. This again confirms that when patients are provided with adequate care, their chances of surviving rise significantly.</p>
 <p><strong><em>pneumonia</em></strong>: For this variable, <strong><em>1</em></strong> indicates <strong><em>patient with pre-existing pneumonia</em></strong> and <strong><em>0</em></strong> indicates <strong><em>who without it</em></strong>. From the 95% confidence interval table, for people with pre-existing pneumonia, their odds of dying is staggeringly 199.57% - 213.87% more than that of people without pre-existing pneumonia, provided that they have same age and same pre-existing conditions. So far people with pre-existing pneumonia is the most susceptible group to dying due to COVID 19.</p>
 <p>Using the same way of variable encoding and parameters interpretation, we found out that for <strong><em>diabetes</em></strong>, the increase in odds of dying is 24,64% - 30.44%, for <strong><em>inmsupr</em></strong>, the increase is 15.00% - 29.32%, for <strong><em>hypertension</em></strong>, the increase is 14.40% - 19.79%, <strong><em>other_disease</em></strong>: 36.28% - 49.01%, <strong><em>obesity</em></strong>: 20.43% - 26.43%, <strong><em>renal_chronic</em></strong>: 42.89% - 55.64%.</p>
 <p>Surprisingly, people with <strong><em>asthma</em></strong> has 5.63% - 17.62% less odds of dying than with people without asthma. For people with <strong><em>copd</em></strong>, the decrease is 3.16% - 12.14%. <strong><em>Tobacco users</em></strong> also have 11.13% - 17.34% less odds of dying than non-users. All the above comparisons are based on the assumption that other conditions, age, patient_type are the same, for example, if we have 2 50-year old males, admitted to the hospital due to COVID-19 who are obese, the one that smokes will have 11.13% - 17.34% less odds of dying than the one that doesn’t smoke (this is not to encourage you to smoke more during the pandemic, <strong><em>correlation</em></strong> is very different than <strong><em>causation</em></strong>. It is likely that there are confounding variables that we do not know about).</p>
-<p>For <strong><em>age</em></strong>, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase for <strong><em>duration</em></strong> is approximately 1%, with an increase in 1 day leads to 1% decrease in odds of dying, this can be explained that mild cases make people down play the seriousness of the disease, leading to people postponing their health checkup.</p>
+<p>For <strong><em>age</em></strong>, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. For <strong><em>duration</em></strong>, with an increase in 1 day leads to approximately 1% decrease in odds of dying, this can be explained that mild cases make people down play the seriousness of the disease, leading to people postponing their health checkup.</p>
 
 
 

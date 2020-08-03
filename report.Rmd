@@ -221,10 +221,10 @@ model = glm(data = data,
 summary(model)
 ```
 
-95% Confident interval:
+95% Confidence interval for odds difference between levels (in percentage):
 
 ```{r  warning=FALSE, message=FALSE}
-exp(confint(model, level = 0.95))
+(exp(confint(model, level = 0.95)) - 1)*100
 ```
 
 All the parameters are significant at 5% level, now we can interpretate the parameters' coefficients.
@@ -239,5 +239,5 @@ Using the same way of variable encoding and parameters interpretation, we found 
 
 Surprisingly, people with ***asthma*** has  5.63% - 17.62% less odds of dying than with people without asthma. For people with ***copd***, the decrease is 3.16% - 12.14%. ***Tobacco users*** also have 11.13% - 17.34% less odds of dying than non-users. All the above comparisons are based on the assumption that other conditions, age, patient_type are the same, for example, if we have 2 50-year old males, admitted to the hospital due to COVID-19 who are obese, the one that smokes will have 11.13% - 17.34% less odds of dying than the one that doesn't smoke (this is not to encourage you to smoke more during the pandemic, ***correlation*** is very different than ***causation***. It is likely that there are confounding variables that we do not know about).
 
-For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase for ***duration*** is approximately 1%, with an increase in 1 day leads to 1% decrease in odds of dying, this can be explained that mild cases make people down play the seriousness of the disease, leading to people postponing their health checkup.
+For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. For ***duration***, with an increase in 1 day leads to approximately 1% decrease in odds of dying, this can be explained that mild cases make people down play the seriousness of the disease, leading to people postponing their health checkup.
 
