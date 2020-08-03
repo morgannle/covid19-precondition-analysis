@@ -17,6 +17,8 @@ I want to give my sincrere gratitude toward Tanmoy Mukherjee (https://www.kaggle
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 library(dplyr)
 library(VIM)
+library(knitr)
+library(kableExtra)
 wd ="C:/Users/nghia/OneDrive/Documents/GitHub/covid19-precondition-analysis"
 setwd(wd)
 ```
@@ -28,8 +30,13 @@ data = as.data.frame(
   read.csv("covid.csv")
 )
 nrow(data)
-head(data)
+kable(data[1:5, ],
+      "html",
+      caption = "Data Schema") %>% 
+  kable_styling() %>%
+  scroll_box(width = "900px", height = "400px")
 ```
+
 
 The data set contains 993,197 records, the data dictionary is provided as below:
 
@@ -99,16 +106,16 @@ data = apply(data, 2, as.numeric)
 We define ***ident***, this function will convert categorical variables to binary ***0*** and ***1***.
 
 ```{r}
-#this function assign 1 as yes and 0 as no
+# this function assign 1 as yes and 0 as no
 ident <- function(x){
   temp = case_when(
     x == 1 ~ 1, 
     x == 2 ~ 0,
-    TRUE ~ 100 #100 is the flag for NA
+    TRUE ~ 100 # 100 is the flag for NA
   )
   return(temp)
 }
-#convert categorical variables to binary 0 and 1
+# convert categorical variables to binary 0 and 1
 data = as.data.frame(
   apply(data, 2, ident)
   )
@@ -117,7 +124,7 @@ data = as.data.frame(
 With the ***subset***, we use value from ***date_died*** to create a new variable ***death***, this variable takes value of ***1*** if the patient died and ***0*** otherwise. 
 
 ```{r}
-#death flag
+# death flag
 subset = subset %>% mutate(
   subset,
   death = ifelse(date_died == "9999-99-99", 0, 1))
@@ -126,7 +133,7 @@ subset = subset %>% mutate(
 Next, we use values from ***date_symptoms*** and ***entry_date*** to create a new variable ***duration***. We define ***duration*** as the time (day) between the day the symptoms started showing and the day the patient went to the hospital for check up.
 
 ```{r}
-#time from symptoms to entry
+# time from symptoms to entry
 subset$date_symptoms = as.Date(subset$date_symptoms, 
                                 format = "%Y-%m-%d")
 subset$entry_date = as.Date(subset$entry_date, 
@@ -137,8 +144,8 @@ subset$duration = as.numeric(subset$entry_date - subset$date_symptoms)
 After pre-processing, we combine two data set.
 
 ```{r}
-data = cbind(data, subset) #combine data sets
-data[data == 100] = NA #replace NA flag with NA value
+data = cbind(data, subset) # combine data sets
+data[data == 100] = NA # replace NA flag with NA value
 ```
 
 Now lets take a look at the missing data pattern.
@@ -163,7 +170,7 @@ In this project, I decided to discard ***pregnancy***, ***contact_other_covid***
 This is why we decided to discard these variables, although omitting these variables will also introduce bias (omitted variable bias), but it's relatively better than two options we considered above. Now we discard variables that we are not going to use.
 
 ```{r}
-#deleting unsed variables
+# deleting unsed variables
 data$date_died = NULL
 data$date_symptoms = NULL
 data$entry_date = NULL
@@ -177,7 +184,7 @@ data$intubed = NULL
 Then we drop all NA record.
 
 ```{r}
-#deleting NULL record
+# deleting NULL record
 data = data[complete.cases(data), ]
 ```
 
@@ -194,8 +201,13 @@ for(i in 1:16){
 This is the final data that we can use for model building. 
 
 ```{r}
-head(data)
+kable(data[1:5, ],
+      "html",
+      caption = "Data Schema") %>% 
+  kable_styling() %>%
+  scroll_box(width = "900px", height = "300px")
 ```
+
 
 ***III. Fitting the logistic regression model and interpretation***
 
