@@ -1,7 +1,7 @@
 ---
-title: "covid-19-analysis"
+title: "COVID-19 Pre-existing Conditions Analysis"
 author: "Quang Le"
-date: "7/31/2020"
+date: "8/2/2020"
 output: html_document
 ---
 
@@ -197,7 +197,7 @@ This is the final data that we can use for model building.
 head(data)
 ```
 
-***II. Fitting the logistic regression model and interpretation***
+***III. Fitting the logistic regression model and interpretation***
 
 In this project we used logistic regression to model  the relationship between independent variables and response variable.
 
@@ -217,7 +217,7 @@ exp(confint(model, level = 0.95))
 
 All the parameters are significant at 5% level, now we can interpretate the parameters' coefficients.
 
-***sex***: This variable is encoded as ***1*** for ***female*** and ***0*** for ***male***. With the 95% confidence interval, we can conclude that when we compare two people with the same pre-existing conditions or age, the odds of dying due to COVID-19 for female is 31.04% - 33.86% less than that of male. Male population is more susceptible to dying due to COVID-19 than the female population. 
+***sex***: This variable is encoded as ***1*** for ***female*** and ***0*** for ***male***. With the 95% confidence interval, we can conclude that when we compare two people with the same pre-existing conditions and age, the odds of dying due to COVID-19 for female is 31.04% - 33.86% less than that of male. Male population is more susceptible to dying due to COVID-19 than the female population. 
 
 ***patient_type***: We encoded ***1*** for ***patients who were admitted to the hospital*** and ***0*** for ***patients who were not***. With the 95% confidence interval, we conclude that for people that were admitted to the hospital, their odds of dying is 92.48% - 92.94% less than that of people who were not admitted, provided that the conditions of the two groups are the same. This again confirms that when patients are provided with adequate care, their chances of surviving rise significantly.
 
@@ -227,5 +227,5 @@ Using the same way of variable encoding and parameters interpretation, we found 
 
 Surprisingly, people with ***asthma*** has  5.63% - 17.62% less odds of dying than with people without asthma. For people with ***copd***, the decrease is 3.16% - 12.14%. ***Tobacco users*** also have 11.13% - 17.34% less odds of dying than non-users. All the above comparisons are based on the assumption that other conditions, age, patient_type are the same, for example, if we have 2 50-year old males, admitted to the hospital due to COVID-19 who are obese, the one that smokes will have 11.13% - 17.34% less odds of dying than the one that doesn't smoke (this is not to encourage you to smoke more during the pandemic, ***correlation*** is very different than ***causation***. It is likely that there are confounding variables that we do not know about).
 
-For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase of ***duration*** is appriximately 1%.
+For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase for ***duration*** is approximately 1%, with an increase in 1 day leads to 1% decrease in odds of dying, this can be explained that mild cases make people down play the seriousness of the disease, leading to people postponing their health checkup.
 
