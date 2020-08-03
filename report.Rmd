@@ -16,6 +16,7 @@ I want to give my sincrere gratitude toward Tanmoy Mukherjee (https://www.kaggle
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 library(dplyr)
+library(VIM)
 wd ="C:/Users/nghia/OneDrive/Documents/GitHub/covid19-precondition-analysis"
 setwd(wd)
 ```
@@ -78,7 +79,7 @@ The data set contains 993,197 records, the data dictionary is provided as below:
 
 ***II. Data processing***
 
-In this project, I decided to discard ***pregnancy***, ***contact_other_covid***, ***covid_res***, ***icu*** and ***intubed***. These variables has significant portion of missing value and we don't know that these are missing completely at random (MCAR) or missing not at random (MNAR), it is the best that we should discard these variable to avoid parameters bias. Data processing is provided below.
+Data processing is provided below.
 
 First we split the data set into 2 parts, ***data*** will contain categorical variables and ***subset*** will contain continuous and date variables.
 
@@ -103,7 +104,7 @@ ident <- function(x){
   temp = case_when(
     x == 1 ~ 1, 
     x == 2 ~ 0,
-    TRUE ~ 100 #100 is the flag for NULL
+    TRUE ~ 100 #100 is the flag for NA
   )
   return(temp)
 }
@@ -122,7 +123,7 @@ subset = subset %>% mutate(
   death = ifelse(date_died == "9999-99-99", 0, 1))
 ```
 
-Next, we use values from ***date_symptoms*** and ***entry_date*** to create a new variable ***duration***. We define ***duration*** as time (day) between the day the symptoms start showing and the day the patient goes to the hospital to check up.
+Next, we use values from ***date_symptoms*** and ***entry_date*** to create a new variable ***duration***. We define ***duration*** as the time (day) between the day the symptoms started showing and the day the patient went to the hospital for check up.
 
 ```{r}
 #time from symptoms to entry
@@ -136,11 +137,30 @@ subset$duration = as.numeric(subset$entry_date - subset$date_symptoms)
 After pre-processing, we combine two data set.
 
 ```{r}
-data$id = c(1:nrow(data)) #create id
 data = cbind(data, subset) #combine data sets
+data[data == 100] = NA #replace NA flag with NA value
 ```
 
-Now we discard variables that we are not going to use.
+Now lets take a look at the missing data pattern.
+
+```{r message=FALSE, warning=FALSE}
+aggr_plot <- aggr(data, 
+                  col=c('navyblue','red'), 
+                  numbers=TRUE, 
+                  sortVars=TRUE, 
+                  labels=names(data), 
+                  cex.axis=.7, 
+                  gap=3, 
+                  ylab=c("Histogram of missing data","Pattern"))
+```
+
+In this project, I decided to discard ***pregnancy***, ***contact_other_covid***, ***covid_res***, ***icu*** and ***intubed***. These variables have significant portion of missing value (>80%) and we don't know that these are missing completely at random (MCAR) or missing not at random (MNAR). We did consider two options, which were:
+
+1. Completely ignore observations with missing values (complete case analysis). This approach will keep all the variables, but it will badly bias our data since we don't really know the underlying mechanism of the missing value, and we will have to drop more than 80% of the observations, meaning significant loss of information.
+
+2. Data imputation using regression model or classifier (depends on the type of the variables with missing value) trained with complete observations. This approach will work fine when the portion of missing value is relatively small (< 50%), but since some variables are missing more than 80% of their value, this approach would create same, or worse bias than option 1.
+
+This is why we decided to discard these variables, although omitting these variables will also introduce bias (omitted variable bias), but it's relatively better than two options we considered above. Now we discard variables that we are not going to use.
 
 ```{r}
 #deleting unsed variables
@@ -154,14 +174,11 @@ data$icu = NULL
 data$intubed = NULL
 ```
 
-Then we drop all NULL record.
+Then we drop all NA record.
 
 ```{r}
 #deleting NULL record
-temp = data %>% filter_all(any_vars(. %in% 100)) #select every record with NULL
-drop_id = temp$id #get id of NULL records
-data = data[-drop_id, ] #delete records with NULL
-data$id = NULL #discard id
+data = data[complete.cases(data), ]
 ```
 
 The last step of data processing is that we convert type of every categorical variables to factor.
@@ -211,3 +228,4 @@ Using the same way of variable encoding and parameters interpretation, we found 
 Surprisingly, people with ***asthma*** has  5.63% - 17.62% less odds of dying than with people without asthma. For people with ***copd***, the decrease is 3.16% - 12.14%. ***Tobacco users*** also have 11.13% - 17.34% less odds of dying than non-users. All the above comparisons are based on the assumption that other conditions, age, patient_type are the same, for example, if we have 2 50-year old males, admitted to the hospital due to COVID-19 who are obese, the one that smokes will have 11.13% - 17.34% less odds of dying than the one that doesn't smoke (this is not to encourage you to smoke more during the pandemic, ***correlation*** is very different than ***causation***. It is likely that there are confounding variables that we do not know about).
 
 For ***age***, one year increase in age will lead to approximately 4% increase in odds of dying. For example, with two patients who were admitted to the hospital with the same pre-existing condition and gender, the one who is 10 years older will have 40% more in odds of dying. This increase of ***duration*** is appriximately 1%.
+
